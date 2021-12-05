@@ -1,0 +1,5 @@
+Id,Word,Kana,Mean
+1,ヽ,くりかえし,"[{""kind"":""n"",""mean"":""repetition mark in katakana""}]"
+2,ヾ,くりかえし,"[{""kind"":""n"",""mean"":""voiced repetition mark in katakana""}]"
+3,ゝ,くりかえし,"[{""kind"":""n"",""mean"":""kí hiệu lặp lại trong tiếng Nhật""}]"
+4,ええ,えー,"[{""kind"":""int"",""mean"":""yes, that is correct, right""},{""mean"":""um, errr""},{""mean"":""huh?""},{""mean"":""grrr, gah, Must I?""},{""kind"":""adj-f"",""mean"":""good""}]"
