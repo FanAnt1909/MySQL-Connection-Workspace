@@ -17,9 +17,13 @@ opt.connect(function(err) {
 
 
 class Mysql_Query {
-    insert(query_string){
-        var q = query_string
-        opt.query(q, function(err, results) {
+    insert(query){
+        //remove line-break from input query
+        var q = query.replace(/\n/g, "")
+        var q2 = q.replace(/\s{2,10}/g, " ")
+        var q3 = q2.replace(/^\s/g, "")
+        //open query
+        opt.query(q3, (err, results) => {
             if (err) throw err;
             console.log(results);
         })   
@@ -36,6 +40,8 @@ class Mysql_Query {
 
     show(){
         var q = 'select * from javi'
+
+        //open query
         opt.query(q, function(err, results) {
             if (err) throw err;
             console.log(results);
@@ -47,7 +53,6 @@ class Mysql_Query {
             if (err) {
                 return console.log('error:' + err.message);
             }
-            console.log('Close the database connection.');
         });
         
     }
