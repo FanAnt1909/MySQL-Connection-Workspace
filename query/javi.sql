@@ -8,12 +8,14 @@ create table javi(
 describe table javi;
 
 --@block
-select * from javi;
+select id from random
+where kanji in ('ching', 'chong', 'long') 
+--@block
+select * from random;
 
 --@block
 INSERT INTO javi (Word, Kana, Mean) 
 VALUES ('ling', 'jing', 'watery');
-
 
 --@block
 delete from javi 
