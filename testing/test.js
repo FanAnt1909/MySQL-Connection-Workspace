@@ -12,15 +12,14 @@ const sleep = require('system-sleep')
 //   });
 
 
-
 const bypass_headers = {
-	'Connection': 'close',
+	'Connection': 'keep-alive',
 	'Upgrade-Insecure-Requests': 1,
-	'Accept-Encoding': ['gzip', 'deflate'],
-	'Accept-Language' : ['en-US', 'en', {q:0.9}]
+	'Accept-Encoding': 'gzip, deflate',
+	'Accept-Language' : 'en-US,en;q=0.9'
 } 
 
-//header resembling anonymous tab
+//header resembling anonymous tabs requests
 const bypass_headers_anonymous = {
     'Connection': 'close',
     'Accept-Encoding': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -43,57 +42,73 @@ const bypass_headers_anonymous = {
 var writeStream = fs.createWriteStream("../csv/csv_out/javi.eng.csv")
 
 //parse csv file
-// fs.createReadStream('../csv/output.csv')
-fs.createReadStream('../csv/csv_in/javi.csv')
+fs.createReadStream('../csv/output.csv')
+// fs.createReadStream('../csv/csv_in/javi.csv')
 .pipe(csv())
-.on('data', async function(data){
+.on('data', async (data) => {
         var word = '';
         var text = '';
     try {
     //DO * with data
     // console.log(data)
-    var string = JSON.stringify(data.Mean)
-    var meaning = string.match(/(?<=mean\\":\\").*?(?=\\")/g)
-    // console.log(`meaning: ${meaning}`)
+        var json = JSON.parse(data.Mean)
+        var concat = ''
+        for (let i = 0; i < json.length; i++) {
+            concat += json[i].mean
+            //if its the final word in arr, dont concat '|'
+            if(i < json.length - 1) {
+                concat += '|'
+            }
+        }
+        console.log(`concated string: ${concat}`) 
 
-    //for each definition of a word
-    for (var i = 0; i < meaning.length; i++){
+    //concat multiples meaning of a word
+    // for (var i = 0; i < meaning.length; i++){
         //google translate api url
-        word += meaning[i];
-        word += ','
-        }
+        // word += meaning[i];
+        // word += ','
+        // }
 
-        text = encodeURI(word)
-        // console.log(`${data.Id}| ${word}: ${text}`)
-        var url = 'https://clients4.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=' + text;
+        text = encodeURI(concat)
         //call api to google trans to check if a string is vnmese or english
+        var url = 'https://clients4.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=' + text;
 
-            fetch(url, {method:'get', headers: bypass_headers_anonymous})
-            .then(res =>{
-                return res.json();
-            }).then(output =>{
-                // console.log(`output.src: ${output.src} | id: ${data.Id}`)
-                console.log(`${output.src}| ${data.Id}| ${word}: ${text}`)
+        fetch(url, {method:'get', headers: bypass_headers_anonymous})
+        .then(res =>{
+            return res.json();
+        }).then(output =>{
+            console.log(`trans_res: ${output.sentences[0].trans}`)
+            console.log(`${output.src}| ${data.Id} | ${concat}`)
+            text = output.sentences[0].trans
+            // IF language detection return non-vietnamese
+            if(output.src != 'vi'){
+            //change definition of line to vi
+                //split trans res into corrsponding arr
+                var res_arr =  text.split(' | ')
+                for(let i=0; i < res_arr.length; i++){
+                    json[i].mean = res_arr[i]
+                }
+                
+                console.log(json)
+                //write line to output file
 
-        // if language detection return eng
-        if(output.src != 'vi'){
-            //write line to output file
-            var def = data.Mean
-            var csv_Mean = def.replace(/"/g, `""`)
-            var csv_line = `${data.Id},${data.Word},${data.Kana},"${csv_Mean}"\n`
-            // fs.appendFile('../csv/csv_out/javi.eng.csv', csv_line, err =>{
-            //     console.log(`err: ${err}`);
-            // })
-            // writeStream.write(csv_line)
-        }
-    }).catch(e =>{
-        console.log(e)
-    })
+                //convert json object back to string
+                var string = JSON.stringify(json)
+                // var line = data.Mean
+                    string = string.replace(/"/g, `""`)
+                var csv_line = `${data.Id},${data.Word},${data.Kana},"${string}"\n`
+                
+                //write to output file
+                writeStream.write(csv_line)
+            }
+        }).catch(e =>{
+            console.log(e)
+        })
     
     }catch(e) {
         console.log(`error: ${e}`)
     }
-    sleep(1000)
+    sleep(200)
     //DO END
 })
 .on('end',function(){
