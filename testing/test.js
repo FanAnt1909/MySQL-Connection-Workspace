@@ -6,9 +6,8 @@ const sleep = require('system-sleep')
 // const query = new sql()
 
 
-// fs.writeFile('./csv/test.txt', 'Hello content!', function (err) {
+// fs.writeFile('../csv/csv_out/javi.eng.csv', 'Id,Word,Kana,Mean', function (err) {
 //     if (err) throw err;
-//     console.log('Saved!');
 //   });
 
 
@@ -36,13 +35,14 @@ const bypass_headers_anonymous = {
 }
 
 //var setup
-
+//
 
 //create write stream
 var writeStream = fs.createWriteStream("../csv/csv_out/javi.eng.csv")
 
 //parse csv file
-fs.createReadStream('../csv/output.csv')
+fs.createReadStream('../csv/test2.txt')
+// fs.createReadStream('../csv/output.csv')
 // fs.createReadStream('../csv/csv_in/javi.csv')
 .pipe(csv())
 .on('data', async (data) => {
@@ -62,16 +62,11 @@ fs.createReadStream('../csv/output.csv')
         }
         console.log(`concated string: ${concat}`) 
 
-    //concat multiples meaning of a word
-    // for (var i = 0; i < meaning.length; i++){
-        //google translate api url
-        // word += meaning[i];
-        // word += ','
-        // }
+        //concat multiples meaning of a word                                                                                                                                                                                   
 
         text = encodeURI(concat)
         //call api to google trans to check if a string is vnmese or english
-        var url = 'https://clients4.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=' + text;
+        var url = 'https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=' + text;
 
         fetch(url, {method:'get', headers: bypass_headers_anonymous})
         .then(res =>{
@@ -82,15 +77,15 @@ fs.createReadStream('../csv/output.csv')
             text = output.sentences[0].trans
             // IF language detection return non-vietnamese
             if(output.src != 'vi'){
-            //change definition of line to vi
+                console.log('eng detected')
+            //CHANGE DEFINITION OF LINE TO VIETNAMESE
                 //split trans res into corrsponding arr
                 var res_arr =  text.split(' | ')
                 for(let i=0; i < res_arr.length; i++){
                     json[i].mean = res_arr[i]
                 }
                 
-                console.log(json)
-                //write line to output file
+                // console.log(json)
 
                 //convert json object back to string
                 var string = JSON.stringify(json)
@@ -101,14 +96,20 @@ fs.createReadStream('../csv/output.csv')
                 //write to output file
                 writeStream.write(csv_line)
             }
+            else {
+                //write input without correction to file
+                var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`
+                writeStream.write(csv_line)
+            }
         }).catch(e =>{
             console.log(e)
         })
-    
+        //pause function
+        sleep(50)
     }catch(e) {
         console.log(`error: ${e}`)
     }
-    sleep(200)
+    
     //DO END
 })
 .on('end',function(){
