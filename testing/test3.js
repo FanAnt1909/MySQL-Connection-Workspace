@@ -20,10 +20,11 @@ const bypass_headers = {
 	'Accept-Language' : ['en-US', 'en', {q:0.9}]
   }
 
-var writeStream = fs.createWriteStream("../csv/csv_out/javi.eng.csv")
+var writeStream = fs.createWriteStream("../csv/csv_out/mock.csv")
 
 //parse csv file
-fs.createReadStream('../csv/output.csv')
+// fs.createReadStream('../csv/output.csv')
+fs.createReadStream('../csv/test2.txt')
 // fs.createReadStream('../csv/csv_out/javi.eng.csv')
 .pipe(csv())
 .on('data', async function(data){
@@ -33,8 +34,12 @@ fs.createReadStream('../csv/output.csv')
 
       // console.log(json[0].mean)
       log(data)
-      //DO * with data  
-      var csv_line = `${data.Id},'${data.Word}','${data.Kana}','${data.Mean}',null`
+      //DO * with data
+      if(data.Kana = ''){
+        data.Kana = null
+      }
+      var mean = data.Mean.replace(/'/g, `''`)
+      var csv_line = `${data.Id},'${data.Word}','${data.Kana}','${mean}',null`
       log(`csv_line: ${csv_line}`)
       await query.insert('mock',csv_line)
       console.log('query success')
@@ -46,5 +51,6 @@ fs.createReadStream('../csv/output.csv')
 })
 .on('end',function(){
     console.log('Done!')
+    //close mysql connection
     query.end()
 });  
