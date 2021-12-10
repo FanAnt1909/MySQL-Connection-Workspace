@@ -72,7 +72,7 @@ fs.createReadStream('../csv/test2.txt')
         .then(res =>{
             return res.json();
         }).then(output =>{
-            console.log(`trans_res: ${output.sentences[0].trans}`)
+            // console.log(`trans_res: ${output.sentences[0].trans}`)
             console.log(`${output.src}| ${data.Id} | ${concat}`)
             text = output.sentences[0].trans
             // IF language detection return non-vietnamese
@@ -91,6 +91,7 @@ fs.createReadStream('../csv/test2.txt')
                 var string = JSON.stringify(json)
                 // var line = data.Mean
                     string = string.replace(/"/g, `""`)
+                    data.Kana = kana.replace(/ /g, ', ')
                 var csv_line = `${data.Id},${data.Word},${data.Kana},"${string}"\n`
                 
                 //write to output file
