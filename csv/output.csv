@@ -1,0 +1,7 @@
+Id,Word,Kana,Mean
+1,ヽ,くりかえし,"[{""kind"":""n"",""mean"":""dấu ngoặc trong katakana""}]"
+2,ヾ,くりかえし,"[{""kind"":""n"",""mean"":""voiced repetition mark in katakana""}]"
+3,ゝ,くりかえし,"[{""kind"":""n"",""mean"":""repetition mark in hiragana""}]"
+4,ゞ,くりかえし,"[{""kind"":""n"",""mean"":""voiced repetition mark in hiragana""}]"
+5,〃,おなじ おなじく,"[{""kind"":""n"",""mean"":""dấu ditto""}]"
+6,仝,どうじょう,"[{""kind"":""n"",""mean"":""\""as above\"" mark""}]"
