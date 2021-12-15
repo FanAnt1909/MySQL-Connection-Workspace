@@ -56,8 +56,9 @@ readFile
     try {
         //PAUSE STREAM
         readFile.pause()
-    //DO * with data
-    // console.log(data)
+
+        //DO * with data
+        // console.log(data)
         var json = JSON.parse(data.Mean)
         var concat = ''
         //concat all meaning of one line into one string separated by |
