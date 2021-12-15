@@ -1,7 +1,6 @@
 const fs = require('fs')
 const csv = require('csv-parser');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const sleep = require('system-sleep')
 // const sql = require('../sql')
 // const query = new sql()
 
@@ -124,8 +123,6 @@ readFile
         }
         ,5000);
 
-        //pause function
-        // sleep(50)
     }catch(e) {
         console.log(`error: ${e}`)
     }
