@@ -46,7 +46,7 @@ var javi = '../csv/csv_in/javi.csv'
 
 //create write stream
 var writeStream = fs.createWriteStream("../csv/csv_out/javi.eng.csv")
-var readFile = fs.createReadStream(javi)
+var readFile = fs.createReadStream(test2)
 //parse csv file
 readFile
 .pipe(csv())
@@ -80,22 +80,19 @@ readFile
         .then(res =>{
             return res.json();
         }).then(output =>{
-            // console.log(`trans_res: ${output.sentences[0].trans}`)
             console.log(`${output.src}| ${data.Id} | ${concat}`)
             text = output.sentences[0].trans
             // IF language detection return non-vietnamese
             if(output.src != 'vi'){
-                console.log('eng detected')
+                // console.log('not vnmese detected')
 
             //CHANGE DEFINITION OF LINE TO VIETNAMESE
-                //split trans res into corrsponding array
+                //vnmese trans json => corresponding array with array before concat
                 var res_arr =  text.split(' | ')
                 for(let i=0; i < res_arr.length; i++){
                     json[i].mean = res_arr[i]
                 }
                 
-                // console.log(json)
-
                 //convert json object back to string
                 var string = JSON.stringify(json)
                 // var line = data.Mean
@@ -108,8 +105,9 @@ readFile
                 writeStream.write(csv_line)
             }
             else {
-                log('condition false')
+                log('vnmese detected')
                 //write input without correction to file
+                data.Kana = data.Kana.replace(/ /g, ', ')
                 var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`
                 writeStream.write(csv_line)
             }
@@ -117,11 +115,10 @@ readFile
             console.log(e)
         })
         //RESUME STREAM
-        //readFile.resume()
+        //pause stream for N second
         setTimeout(function(){
             readFile.resume()
-        }
-        ,5000);
+        }, 5000);
 
     }catch(e) {
         console.log(`error: ${e}`)
