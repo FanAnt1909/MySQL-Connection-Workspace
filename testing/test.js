@@ -51,7 +51,7 @@ var readFile = fs.createReadStream(test2)
 readFile
 .pipe(csv())
 .on('data', async (data) => {
-        var text = '';
+    var text = '';
     try {
         //PAUSE STREAM
         readFile.pause()
@@ -60,9 +60,11 @@ readFile
         // console.log(data)
         var json = JSON.parse(data.Mean)
         var concat = ''
+
         //concat all meaning of one line into one string separated by |
         for (let i = 0; i < json.length; i++) {
             concat += json[i].mean
+
             //if its the final word in arr, dont concat '|'
             if(i < json.length - 1) {
                 concat += '|'
@@ -84,9 +86,8 @@ readFile
             text = output.sentences[0].trans
             // IF language detection return non-vietnamese
             if(output.src != 'vi'){
-                // console.log('not vnmese detected')
 
-            //CHANGE DEFINITION OF LINE TO VIETNAMESE
+                //CHANGE DEFINITION OF LINE TO VIETNAMESE
                 //vnmese trans json => corresponding array with array before concat
                 var res_arr =  text.split(' | ')
                 for(let i=0; i < res_arr.length; i++){
@@ -95,13 +96,12 @@ readFile
                 
                 //convert json object back to string
                 var string = JSON.stringify(json)
-                // var line = data.Mean
                     string = string.replace(/"/g, `""`)
                     data.Kana = data.Kana.replace(/ /g, ', ')
                 var csv_line = `${data.Id},${data.Word},${data.Kana},"${string}"\n`
                 
                 //write to output file
-                log('condition true')
+                log('non-vnmese detected')
                 writeStream.write(csv_line)
             }
             else {
@@ -111,14 +111,15 @@ readFile
                 var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`
                 writeStream.write(csv_line)
             }
+
         }).catch(e =>{
             console.log(e)
         })
-        //RESUME STREAM
-        //pause stream for N second
-        setTimeout(function(){
+
+        //RESUME STREAM after N second
+        setTimeout( () => {
             readFile.resume()
-        }, 5000);
+        }, 4000);
 
     }catch(e) {
         console.log(`error: ${e}`)

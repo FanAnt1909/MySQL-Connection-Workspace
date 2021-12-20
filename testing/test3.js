@@ -35,11 +35,11 @@ fs.createReadStream('../csv/test2.txt')
       // console.log(json[0].mean)
       log(data)
       //DO * with data
-      if(data.Kana = ''){
-        data.Kana = null
-      }
-      var mean = data.Mean.replace(/'/g, `''`)
-      var csv_line = `${data.Id},'${data.Word}','${data.Kana}','${mean}',null`
+      // if(data.Kana = ''){
+      //   data.Kana = null
+      // }
+      data.Mean = data.Mean.replace(/'/g, `''`)
+      var csv_line = `${data.Id},'${data.Word}','${data.Kana}','${data.Mean}',null`
       log(`csv_line: ${csv_line}`)
       await query.insert('mock',csv_line)
       console.log('query success')
