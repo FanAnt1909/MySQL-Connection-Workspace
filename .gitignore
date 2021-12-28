@@ -1,1 +1,5 @@
 /node_modules
+/dict
+/dict_converted
+/parse/ref
+/parse/removed
