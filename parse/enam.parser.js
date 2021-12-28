@@ -24,51 +24,57 @@ async function parse() {
         var word = line.match(/^[^\s]+/g)
         var kana = line.match(/(?<=\[)(.*)(?=\])/g)
         var kind = line.match(/(?<=\()(.{1,6})(?=\))/g)
-
-        //check if type arr contain inappropriate element
-        for (let i = 0; i < kind.length; i++) {
-            //split type incase it contain comma : ex: (p,cr)
-            var split_error = false
-            split = kind[i].split(',')
-            for (let j = 0; j < split.length; j++) {
-                //if split element doest exsist in ref arr
-                        // => set error var to true
-                if(ref.includes(split[j])==false){
-                    split_error = true
-                }                    
-            }
-            if(ref.includes(kind[i]) == false && split_error == true){
-                log('not ref')
-      
-                //check if tag are already written in removed file before, if not duplicated, write to file
-                // console.log(`before tag check: ${kind[i]}`)
-                // console.log(`tag arr: ${tag}`)
-                var c = 0
-                if(tag.includes(kind[i]) == false){
-                    
-                    log(`tag: ${tag}`)
-                    //push tag to tag exsisted tag array
-                    tag.push(kind[i])
-                    //add to removed list
-                    removeStream.write(`${kind[i]}\n`)
+        
+        if (kind!= null){
+            //check if type arr contain inappropriate element
+            for (let i = 0; i < kind.length; i++) {
+                //split kind incase it contains comma : ex: (p,cr)
+                var split_error = false
+                split = kind[i].split(',')
+                for (let j = 0; j < split.length; j++) {
+                    //if split element doest exsist in ref arr
+                            // => set error var to true
+                    if(ref.includes(split[j])==false){
+                        split_error = true
+                    }                    
                 }
+                if(ref.includes(kind[i]) == false && split_error == true){
+                    log('not ref')
+        
+                    //check if tag are already written in removed file before, if not duplicated, write to file
+                    // console.log(`before tag check: ${kind[i]}`)
+                    // console.log(`tag arr: ${tag}`)
+                    var c = 0
+                    if(tag.includes(kind[i]) == false){
+                        
+                        log(`tag: ${tag}`)
+                        //push tag to tag exsisted tag array
+                        tag.push(kind[i])
+                        //add to removed list
+                        removeStream.write(`${kind[i]}\n`)
+                    }
 
-                //remove the tag
-                kind.splice(i,1)
+                    //remove the tag
+                    kind.splice(i,1)
+                }
             }
-        }
-        if(kind.length > 1){
-            log('muitiple')
-            var mean = line.match(/(?<=\/\((.{1,4})\)\s)(.*)(?=\/$)/g).join()
-                // log(`transformed mean: ${mean}`)
-                mean = mean.split(/\/\(.{1,4}\)\s/g)
-                // mean = mean.join('|')
+
+            if(kind.length > 1){
+                log('muitiple')
+                var mean = line.match(/(?<=\/\((.{1,4})\)\s)(.*)(?=\/$)/g).join()
+                    // log(`transformed mean: ${mean}`)
+                    mean = mean.split(/\/\(.{1,4}\)\s/g)
+                    // mean = mean.join('|')
+            } else {
+                log('single')
+                var mean = line.match(/(?<=\/\(.*\)\s)(.*)(?=\/$)/g)
+            }
         } else {
-            log('single')
-            var mean = line.match(/(?<=\/\(.*\)\s)(.*)(?=\/$)/g)
+            log('kind not found or longer than 6char')
+            kind = [null]
         }
 
-      //init json object to contain fields
+        //init json object to contain fields
         var json = {
             word: word[0],
             kana: '',
@@ -86,10 +92,6 @@ async function parse() {
         log(line)
         log('___________________________')
         console.log(json)
-        // log(`word: ${word}`)
-        // log(`kana: ${kana}`)
-        // log(`type: ${kind}`)
-        // log(`mean: ${mean}`)
         log('\n')
         writeStream.write(`${json.word}\n`)
     }
