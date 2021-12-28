@@ -39,14 +39,7 @@ async function parse() {
             }
             if(ref.includes(kind[i]) == false && split_error == true){
                 log('not ref')
-                // fs.appendFile('./removed', `${kind[i]}\n`, err => {
-                //     if (err) {
-                //         console.error(err)
-                //         return
-                //     } 
-                // })
-
-                
+      
                 //check if tag are already written in removed file before, if not duplicated, write to file
                 // console.log(`before tag check: ${kind[i]}`)
                 // console.log(`tag arr: ${tag}`)
