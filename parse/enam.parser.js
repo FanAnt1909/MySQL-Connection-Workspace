@@ -9,9 +9,10 @@ function log(state){
 
 const writeStream = fs.createWriteStream('../output/output.txt')
 const removeStream = fs.createWriteStream('./removed')
+const uncertifedStream = fs.createWriteStream('./uncertified')
 
 async function parse() {
-    const ref =  ['s','p','u','g','f','m','h','o','pr','c','st','serv','wk','c','ev','myth','leg','fic','ct','ch']
+    const ref =  ['s','p','u','g','f','m','h','o','pr','c','st','serv','wk','c','ev','myth','leg','fic','ct','ch','fic','obj']
     var tag = []
     const fileStream = fs.createReadStream('../dict_converted/enamdict.c.txt');
 
@@ -23,7 +24,8 @@ async function parse() {
     for await (const line of rl) {
         var word = line.match(/^[^\s]+/g)
         var kana = line.match(/(?<=\[)(.*)(?=\])/g)
-        var kind = line.match(/(?<=\()(.{1,6})(?=\))/g)
+        // var kind = line.match(/(?<=\()(.{1,6})(?=\))/g)
+        var kind = line.match(/(?<=\()(([^(]){1,9})(?=\))/g)
         
         if (kind!= null){
             //check if type arr contain inappropriate element
@@ -42,9 +44,8 @@ async function parse() {
                     log('not ref')
         
                     //check if tag are already written in removed file before, if not duplicated, write to file
-                    // console.log(`before tag check: ${kind[i]}`)
-                    // console.log(`tag arr: ${tag}`)
-                    var c = 0
+
+                    //tag listing handling
                     if(tag.includes(kind[i]) == false){
                         
                         log(`tag: ${tag}`)
@@ -54,16 +55,16 @@ async function parse() {
                         removeStream.write(`${kind[i]}\n`)
                     }
 
-                    //remove the tag
+                    //remove the kind
                     kind.splice(i,1)
                 }
             }
 
             if(kind.length > 1){
                 log('muitiple')
-                var mean = line.match(/(?<=\/\((.{1,4})\)\s)(.*)(?=\/$)/g).join()
-                    // log(`transformed mean: ${mean}`)
-                    mean = mean.split(/\/\(.{1,4}\)\s/g)
+                // var mean = line.match(/(?<=\/\((.{1,4})\)\s)(.*)(?=\/$)/g).join()
+                //     mean = mean.split(/\/\(.{1,4}\)\s/g)
+                    var mean = line.match(/(?<=\/\((.*)\)\s)([^(]*)(?=\/)/g)
                     // mean = mean.join('|')
             } else {
                 log('single')
@@ -71,6 +72,7 @@ async function parse() {
             }
         } else {
             log('kind not found or longer than 6char')
+            uncertifedStream.write(`${line}\n`)
             kind = [null]
         }
 
@@ -89,11 +91,22 @@ async function parse() {
             obj.mean = mean[i]
             json.sense.push(obj) 
         }
+
+        //pause stream 
+        fileStream.pause()
+
         log(line)
         log('___________________________')
         console.log(json)
         log('\n')
-        writeStream.write(`${json.word}\n`)
+
+        //write to output file
+        // writeStream.write(`${json.word}\n`)
+
+        //resumeStream
+        setTimeout( () => {
+            fileStream.resume()
+        }, 500);
     }
 }
 
