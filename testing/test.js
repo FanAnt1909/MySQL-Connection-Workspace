@@ -45,8 +45,9 @@ var output = '../csv/output.csv'
 var javi = '../csv/csv_in/javi.csv'
 
 //create write stream
-var writeStream = fs.createWriteStream("../csv/csv_out/javi.eng.csv")
-var readFile = fs.createReadStream(test2)
+var writeStreamVI = fs.createWriteStream("../output/ja_vi.txt")
+var writeStreamEN = fs.createWriteStream("../output/ja_en.txt")
+var readFile = fs.createReadStream(javi)
 //parse csv file
 readFile
 .pipe(csv())
@@ -102,16 +103,17 @@ readFile
                 
                 //write to output file
                 log('non-vnmese detected')
-                writeStream.write(csv_line)
+                writeStreamEN.write(csv_line)
             }
             else {
                 log('vnmese detected')
                 //write input without correction to file
                 data.Kana = data.Kana.replace(/ /g, ', ')
                 var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`
-                writeStream.write(csv_line)
+                writeStreamVI.write(csv_line)
             }
-
+            
+        //catch google api error 
         }).catch(e =>{
             console.log(e)
         })
@@ -119,7 +121,7 @@ readFile
         //RESUME STREAM after N second
         setTimeout( () => {
             readFile.resume()
-        }, 4000);
+        }, 3000);
 
     }catch(e) {
         console.log(`error: ${e}`)
