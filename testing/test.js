@@ -86,7 +86,7 @@ var readFile = fs.createReadStream(javi_wo_addition)
         // log('fetch reached')
 
         //IMMEDIATE Recursive googleapi_call
-        (function google_api(){
+        await (function google_api(){
             var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
             axios.get(url, {headers: bypass_headers_anonymous})
             .then(res =>{
@@ -135,6 +135,7 @@ var readFile = fs.createReadStream(javi_wo_addition)
                 return e.response
             })
         }) ()
+        
         // RESUME STREAM after N second
         setTimeout( () => {
             readFile.resume()
