@@ -85,7 +85,7 @@ var readFile = fs.createReadStream(test_csv)
         //call api to google trans to check if a string is vnmese or english
         // var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
         // log('fetch reached')
-        if(concat.length < 5000){
+        if(concat.length <= 5000){
             //IMMEDIATE Recursive googleapi_call
             await (function google_api(){
                 var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
@@ -95,7 +95,7 @@ var readFile = fs.createReadStream(test_csv)
                     var fixed = 'no'
                     // console.log(`OUTPUT`)
                     // console.log(res.data)
-                    translation = res.data.sentences.map(item => item.trans).join()
+                    translation = res.data.sentences.map(item => item.trans).join('')
                     log(translation)
                     // console.log(`${res.data.src}| ${data.Id} | ${concat}`)
                     console.log(`${data.Id} - trans res: ${translation}`)
@@ -122,7 +122,7 @@ var readFile = fs.createReadStream(test_csv)
                     }
                     else {
                         // log('vnmese detected')
-                        //write input without correction to file
+                        // write input without correction to file
                         // data.Kana = data.Kana.replace(/ /g, ', ')
                         var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}",${fixed}\n`
                         writeStreamVI.write(csv_line)
@@ -131,9 +131,8 @@ var readFile = fs.createReadStream(test_csv)
                 }).catch(e =>{
                     //write to error file
                     console.log(e.response)
-                    errStream.write(`${e}\n ${data.Id} \n |*BEFORE REQUEST ${concat}\n | RESPONSE: ${response}>>>\n`)
+                    errStream.write(`${e}\n ${data.Id} \n |*BEFORE REQUEST ${concat}\n | RESPONSE: ${response}\n>>>\n\n`)
                     google_api()
-                    // console.log(response)
                     return e.response
                 })
             }) ()
