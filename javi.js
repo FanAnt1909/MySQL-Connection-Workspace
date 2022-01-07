@@ -10,28 +10,31 @@ var enam = './dict_converted/enamdict.c.txt'
 var javi_extra = './dict/addition_javi.csv'
 var r_ele_filtered = './output/javi_r_ele_filtered.txt'
 var enam_filtered = './output/javi_enam_filtered.txt'
-var jmdict = './dict/jmdict_mongo.csv'
-var mean_filtered = './output/mean_filtered.txt'
+var jmdict = './dict/JMdict_e.json'
+// var mean_filtered = './output/mean_filtered.txt'
+var javi_extra_legit = './dict/addition_javi_legit.csv'
+var javi_original = './dict/javi.csv'
 
 //read from
-var readFile = fs.createReadStream(enam_filtered)
+var readFile = fs.createReadStream(javi_extra_legit)
 //look up in
-var lookup = fs.readFileSync(jmdict, {encoding:'utf8', flag:'r'});
+var lookup = fs.readFileSync(enam, {encoding:'utf8', flag:'r'});
 //write to
-var writeStream = fs.createWriteStream(mean_filtered)
+var writeStream = fs.createWriteStream(enam_filtered)
 //parse csv file
 readFile
 .pipe(csv())
 .on('data', (data) => {
     //DO START
-    var parsed = JSON.parse((data.Mean)[0].mean)
+    // var parsed = JSON.parse(data.Mean)[0].mean
+    var parsed = data.Word
     // console.log(JSON.parse(data.Mean)[0].mean)
     //check query
-    console.log(lookup.includes(data.Word))
+    console.log(lookup.includes(parsed))
     data.Mean = data.Mean.replace(/"/g, `""`)
-    // if(lookup.includes(data.Word)==false){
-    //     writeStream.write(`${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`)
-    // }
+    if(lookup.includes(parsed)==false){
+        writeStream.write(`${data.Id},${data.Word},${data.Kana},"${data.Mean}"\n`)
+    }
     //DO END
 })
 .on('end',function(){
