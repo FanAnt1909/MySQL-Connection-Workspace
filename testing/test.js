@@ -49,12 +49,13 @@ const bypass_headers_anonymous = {
 var javi_wo_addition = '../dict/javi_wo_addition.csv'
 var javi_wo_re = '../dict/javi_wo_re.csv'
 var err_log = '../output/error.txt'
+var test_csv = '../dict/test.csv'
 
 //create write stream
 var writeStreamVI = fs.createWriteStream(javi_wo_re)
 // var writeStreamEN = fs.createWriteStream(javi_wo_re)
 var errStream = fs.createWriteStream(err_log)
-var readFile = fs.createReadStream(javi_wo_addition)
+var readFile = fs.createReadStream(test_csv)
 //parse csv file
 
 .pipe(csv())
@@ -76,73 +77,74 @@ var readFile = fs.createReadStream(javi_wo_addition)
                 concat += ' | '
             }
         }
-        // console.log(`concated string: ${concat}`) 
+        console.log(`concated string: ${concat}`) 
         //concat multiples meaning of a word                                                                                                                                                                                   
         // var response
         var text = encodeURI(concat);
-        // console.log(`before request: ${concat}`)
+        console.log(`before request: ${text}`)
         //call api to google trans to check if a string is vnmese or english
         // var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
         // log('fetch reached')
-
-        //IMMEDIATE Recursive googleapi_call
-        await (function google_api(){
-            var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
-            axios.get(url, {headers: bypass_headers_anonymous})
-            .then(res =>{
-                response = res.data
-                var fixed = 'no'
-                // console.log(`OUTPUT`)
-                // console.log(res.data)
-                translation = res.data.sentences[0].trans
-                // console.log(`${res.data.src}| ${data.Id} | ${concat}`)
-                console.log(`${data.Id} - trans res: ${translation}`)
-                // text = translation
-                // IF language detection return non-vietnamese
-                if(res.data.src != 'vi'){
-                    fixed = 'yes'
-                    //CHANGE DEFINITION OF LINE TO VIETNAMESE
-                    //vnmese trans json => corresponding array with array before concat
-                    var res_arr =  translation.split(' | ')
-                    for(let i=0; i < res_arr.length; i++){
-                        json[i].mean = res_arr[i]
+        if(concat.length < 5000){
+            //IMMEDIATE Recursive googleapi_call
+            await (function google_api(){
+                var url = `https://clients${randomInt(1,5)}.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=vi&q=` + text;
+                axios.get(url, {headers: bypass_headers_anonymous})
+                .then(res =>{
+                    response = res.data
+                    var fixed = 'no'
+                    // console.log(`OUTPUT`)
+                    // console.log(res.data)
+                    translation = res.data.sentences.map(item => item.trans).join()
+                    log(translation)
+                    // console.log(`${res.data.src}| ${data.Id} | ${concat}`)
+                    console.log(`${data.Id} - trans res: ${translation}`)
+                    // text = translation
+                    // IF language detection return non-vietnamese
+                    if(res.data.src != 'vi'){
+                        fixed = 'yes'
+                        //CHANGE DEFINITION OF LINE TO VIETNAMESE
+                        //vnmese trans json => corresponding array with array before concat
+                        var res_arr =  translation.split(' | ')
+                        for(let i=0; i < res_arr.length; i++){
+                            json[i].mean = res_arr[i]
+                        }
+                        
+                        //convert json object back to string
+                        data.Mean = JSON.stringify(json)
+                        data.Mean = data.Mean.replace(/"/g, `""`)
+                        // data.Kana = data.Kana.replace(/ /g, ', ')
+                        var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}",${fixed}\n`
+                        
+                        //write to output file
+                        // log('non-vnmese detected')
+                        writeStreamVI.write(csv_line)
                     }
-                    
-                    //convert json object back to string
-                    data.Mean = JSON.stringify(json)
-                    data.Mean = data.Mean.replace(/"/g, `""`)
-                    // data.Kana = data.Kana.replace(/ /g, ', ')
-                    var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}",${fixed}\n`
-                    
-                    //write to output file
-                    // log('non-vnmese detected')
-                    writeStreamVI.write(csv_line)
-                }
-                else {
-                    // log('vnmese detected')
-                    //write input without correction to file
-                    // data.Kana = data.Kana.replace(/ /g, ', ')
-                    var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}",${fixed}\n`
-                    writeStreamVI.write(csv_line)
-                }
-            //catch google api error 
-            }).catch(e =>{
-                //write to error file
-                console.log(e.response)
-                errStream.write(`${e}\n ${data.Id} \n |*BEFORE REQUEST ${concat}\n | RESPONSE: ${response}>>>\n`)
-                google_api()
-                // console.log(response)
-                return e.response
-            })
-        }) ()
-        
+                    else {
+                        // log('vnmese detected')
+                        //write input without correction to file
+                        // data.Kana = data.Kana.replace(/ /g, ', ')
+                        var csv_line = `${data.Id},${data.Word},${data.Kana},"${data.Mean}",${fixed}\n`
+                        writeStreamVI.write(csv_line)
+                    }
+                //catch google api error 
+                }).catch(e =>{
+                    //write to error file
+                    console.log(e.response)
+                    errStream.write(`${e}\n ${data.Id} \n |*BEFORE REQUEST ${concat}\n | RESPONSE: ${response}>>>\n`)
+                    google_api()
+                    // console.log(response)
+                    return e.response
+                })
+            }) ()
+        }
         // RESUME STREAM after N second
         setTimeout( () => {
             readFile.resume()
         }, 25);
 
     }catch(e) {
-        console.log(`error: ${e}`)
+        console.log(e)
         return e;
     }
     // console.log('data process done')
